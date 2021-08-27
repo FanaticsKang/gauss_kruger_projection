@@ -59,3 +59,6 @@ target_link_libraries(navinfo -lproj)
 #Link Opencv
 #target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
 
+add_executable(nav_test src/nav_test.cc
+                        src/navinfo_projection.cc)
+target_link_libraries(nav_test -lproj)
