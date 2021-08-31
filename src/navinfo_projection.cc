@@ -10,10 +10,41 @@ NaviProjection::NaviProjection(const double central_meridian,
     : central_meridian_(central_meridian),
       earth_radius_(earth_radius),
       flattening_(flattening) {
-  char wgs84_config[500];
-  // set earth_radius and flattening
   std::cout << "\033[032m--------Navi Projection Initialization--------\033[0m"
             << std::endl;
+  SetWGS84Config(earth_radius, flattening);
+  SetGroundConfig(central_meridian);
+
+  if (wgs84_projection_ == nullptr || ground_projection_ == nullptr) {
+    std::cout << "\033[031m"
+              << "NaviProjection Init Error"
+              << "\033[0m" << std::endl;
+  }
+}
+
+Eigen::Vector2d NaviProjection::ToGround(const Eigen::Vector2d& wgs84) {
+  double x = wgs84.x();
+  double y = wgs84.y();
+
+  pj_transform(wgs84_projection_, ground_projection_, 1, 1, &x, &y, NULL);
+  return Eigen::Vector2d(x, y);
+}
+
+Eigen::Vector2d NaviProjection::ToWGS84(const Eigen::Vector2d& ground) {
+  double x = ground.x();
+  double y = ground.y();
+
+  pj_transform(ground_projection_, wgs84_projection_, 1, 1, &x, &y, NULL);
+  return Eigen::Vector2d(x, y);
+}
+
+void NaviProjection::SetWGS84Config(const double earth_radius,
+                                    const double flattening) {
+  earth_radius_ = earth_radius;
+  flattening_ = flattening;
+
+  char wgs84_config[500];
+  // set earth_radius and flattening
   sprintf(wgs84_config,
           "+proj=longlat +towgs84=0.0000,0.0000,0.0000 +a=%.3f +rf=%.3f "
           "+lat_0=0.00000000 +lon_0=104.000000000 +lat_1=24.000000000 "
@@ -21,9 +52,12 @@ NaviProjection::NaviProjection(const double central_meridian,
           earth_radius_, flattening_);
   std::cout << "wgs84 config: " << wgs84_config << std::endl;
 
-  // init WGS84 coordinate system, longitude and latitude
+  // Set WGS84 coordinate system, longitude and latitude
   wgs84_projection_ = pj_init_plus(wgs84_config);
+}
 
+void NaviProjection::SetGroundConfig(const double central_meridian) {
+  central_meridian_ = central_meridian;
   char ground_config[500];
   // set central_meridian
   sprintf(ground_config,
@@ -33,29 +67,8 @@ NaviProjection::NaviProjection(const double central_meridian,
 
   std::cout << "ground config: " << ground_config << std::endl;
 
-  // init gauss kruger projection
+  // set gauss kruger projection
   ground_projection_ = pj_init_plus(ground_config);
-
-  if (wgs84_projection_ == nullptr || ground_projection_ == nullptr) {
-    std::cout << "\033[031m"
-              << "NaviProjection Init Error"
-              << "\033[0m" << std::endl;
-  }
-}
-
-Eigen::Vector2d NaviProjection::ToGround(const Eigen::Vector2d wgs84) {
-  double x = wgs84.x();
-  double y = wgs84.y();
-
-  pj_transform(wgs84_projection_, ground_projection_, 1, 1, &x, &y, NULL);
-  return Eigen::Vector2d(x, y);
-}
-Eigen::Vector2d NaviProjection::ToWGS84(const Eigen::Vector2d ground) {
-  double x = ground.x();
-  double y = ground.y();
-
-  pj_transform(ground_projection_, wgs84_projection_, 1, 1, &x, &y, NULL);
-  return Eigen::Vector2d(x, y);
 }
 
 NaviProjection::~NaviProjection() {
