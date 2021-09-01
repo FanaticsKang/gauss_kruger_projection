@@ -14,6 +14,11 @@ class NaviProjection {
   void SetGroundConfig(const double central_meridian);
   void SetWGS84Config(const double earth_radius, const double flattening);
 
+  // Set the origin of map
+  void SetOrigin(const Eigen::Vector2d& ground);
+  // To local coordinate by the origin of map
+  Eigen::Vector2d ToLocal(const Eigen::Vector2d& wgs84);
+
  private:
   NaviProjection(const double central_meridian, const double earth_radius,
                  const double flattening);
@@ -29,4 +34,7 @@ class NaviProjection {
   double central_meridian_;
   double earth_radius_;
   double flattening_;
+
+  Eigen::Vector2d ground_origin_;
+  Eigen::Vector2d wgs84_origin_;
 };

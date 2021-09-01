@@ -71,6 +71,16 @@ void NaviProjection::SetGroundConfig(const double central_meridian) {
   ground_projection_ = pj_init_plus(ground_config);
 }
 
+void NaviProjection::SetOrigin(const Eigen::Vector2d& wgs84) {
+  wgs84_origin_ = wgs84;
+  ground_origin_ = ToGround(wgs84);
+}
+
+Eigen::Vector2d NaviProjection::ToLocal(const Eigen::Vector2d& wgs84) {
+  Eigen::Vector2d ground = ToGround(wgs84);
+  return ground - ground_origin_;
+}
+
 NaviProjection::~NaviProjection() {
   if (wgs84_projection_ != nullptr) {
     pj_free(wgs84_projection_);
