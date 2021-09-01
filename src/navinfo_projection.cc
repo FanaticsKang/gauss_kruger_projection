@@ -22,7 +22,7 @@ NaviProjection::NaviProjection(const double central_meridian,
   }
 }
 
-Eigen::Vector2d NaviProjection::ToGround(const Eigen::Vector2d& wgs84) {
+Eigen::Vector2d NaviProjection::ToGround(const Eigen::Vector2d &wgs84) {
   double x = wgs84.x();
   double y = wgs84.y();
 
@@ -30,7 +30,7 @@ Eigen::Vector2d NaviProjection::ToGround(const Eigen::Vector2d& wgs84) {
   return Eigen::Vector2d(x, y);
 }
 
-Eigen::Vector2d NaviProjection::ToWGS84(const Eigen::Vector2d& ground) {
+Eigen::Vector2d NaviProjection::ToWGS84(const Eigen::Vector2d &ground) {
   double x = ground.x();
   double y = ground.y();
 
@@ -71,12 +71,12 @@ void NaviProjection::SetGroundConfig(const double central_meridian) {
   ground_projection_ = pj_init_plus(ground_config);
 }
 
-void NaviProjection::SetOrigin(const Eigen::Vector2d& wgs84) {
+void NaviProjection::SetOrigin(const Eigen::Vector2d &wgs84) {
   wgs84_origin_ = wgs84;
   ground_origin_ = ToGround(wgs84);
 }
 
-Eigen::Vector2d NaviProjection::ToLocal(const Eigen::Vector2d& wgs84) {
+Eigen::Vector2d NaviProjection::ToLocal(const Eigen::Vector2d &wgs84) {
   Eigen::Vector2d ground = ToGround(wgs84);
   return ground - ground_origin_;
 }

@@ -11,7 +11,7 @@ int main() {
                                        {106.7600459, 29.6428347},
                                        {106.7599744, 29.6428329}};
   test->SetOrigin(parr[0] * DEG_TO_RAD);
-  for (auto& tmp : parr) {
+  for (auto &tmp : parr) {
     Eigen::Vector2d origin = tmp;
     origin *= DEG_TO_RAD;
     Eigen::Vector2d ground = test->ToGround(origin);
