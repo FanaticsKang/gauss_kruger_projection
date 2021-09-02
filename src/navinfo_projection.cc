@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <iostream>
 
-NaviProjection* NaviProjection::data_ = nullptr;
+NaviProjection *NaviProjection::data_ = nullptr;
 NaviProjection::NaviProjection(const double central_meridian,
                                const double earth_radius,
                                const double flattening)
@@ -23,6 +23,8 @@ NaviProjection::NaviProjection(const double central_meridian,
 }
 
 Eigen::Vector2d NaviProjection::ToGround(const Eigen::Vector2d &wgs84) {
+  // wgs84单位需要是弧度
+  CheckWGS84Radian(wgs84);
   double x = wgs84.x();
   double y = wgs84.y();
 
@@ -36,6 +38,11 @@ Eigen::Vector2d NaviProjection::ToWGS84(const Eigen::Vector2d &ground) {
 
   pj_transform(ground_projection_, wgs84_projection_, 1, 1, &x, &y, NULL);
   return Eigen::Vector2d(x, y);
+}
+
+Eigen::Vector2d NaviProjection::ToWGS84Deg(const Eigen::Vector2d &ground) {
+  Eigen::Vector2d wgs84 = ToWGS84(ground);
+  return wgs84 *= RAD_TO_DEG;
 }
 
 void NaviProjection::SetWGS84Config(const double earth_radius,
@@ -72,6 +79,8 @@ void NaviProjection::SetGroundConfig(const double central_meridian) {
 }
 
 void NaviProjection::SetOrigin(const Eigen::Vector2d &wgs84) {
+  // wgs84 的单位必须是弧度
+  CheckWGS84Radian(wgs84);
   wgs84_origin_ = wgs84;
   ground_origin_ = ToGround(wgs84);
 }
@@ -90,11 +99,21 @@ NaviProjection::~NaviProjection() {
   }
 }
 
-NaviProjection* NaviProjection::MakeNaviProjection(
+NaviProjection *NaviProjection::MakeNaviProjection(
     const double central_meridian, const double earth_radius,
     const double flattening) {
   if (data_ == nullptr) {
     data_ = new NaviProjection(central_meridian, earth_radius, flattening);
   }
   return data_;
+}
+
+bool NaviProjection::CheckWGS84Radian(const Eigen::Vector2d &wgs84) const {
+  if (wgs84[0] > M_PI || wgs84[1] > M_PI) {
+    std::cout << "\033[031mError! \033[0m"
+              << "Longitude and latitude should be radian: "
+              << wgs84.transpose() << std::endl;
+    return false;
+  }
+  return true;
 }
